@@ -1,0 +1,21 @@
+spring:
+  main:
+    web-application-type: "reactive"
+---
+server:
+  port: 7070
+spring:
+  application:
+    name: "springai-agentexecutor"
+---
+spring:
+  ai:
+    model:
+      chat: 'openai'
+    openai:
+      base-url: http://192.168.50.252:11434
+      api-key: "your-key"
+      chat:
+        options:
+          internal-tool-execution-enabled: false
+          proxy-tool-calls: false

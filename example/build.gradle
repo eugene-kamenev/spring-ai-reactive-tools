@@ -1,0 +1,23 @@
+plugins {
+    id 'org.springframework.boot'
+}
+
+bootRun {
+    jvmArgs [
+        '--enable-native-access=ALL-UNNAMED',
+    ]
+}
+
+compileJava {
+    // required for reflection to read parameter names
+    options.compilerArgs += ['-parameters']
+}
+
+dependencies {
+    implementation project(':core')
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
+    // terminal
+    implementation 'org.jetbrains.pty4j:pty4j:0.13.2'
+    implementation 'org.fusesource.jansi:jansi:2.4.1'
+}
