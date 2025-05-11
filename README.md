@@ -26,4 +26,8 @@ var stream = agent.stream(new Prompt("What is the weather in London?"));
 
 ## Example Project
 Review example project which includes conversation history handling, interactive terminal in the browser linked with agent for tool calls.
-[Demo](https://github.com/eugene-kamenev/spring-ai-reactive-tools/blob/main/video/reactive-tools.webm)
+
+
+
+https://github.com/user-attachments/assets/bd2bafa7-8749-4d3f-84b8-3950be598c14
+
