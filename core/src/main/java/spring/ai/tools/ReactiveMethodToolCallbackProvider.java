@@ -5,15 +5,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 import org.springframework.ai.tool.ToolCallback;
 import org.springframework.ai.tool.ToolCallbackProvider;
 import org.springframework.ai.tool.annotation.Tool;
-import org.springframework.ai.tool.definition.ToolDefinition;
 import org.springframework.ai.tool.metadata.ToolMetadata;
-import org.springframework.ai.tool.util.ToolUtils;
+import org.springframework.ai.tool.support.ToolDefinitions;
+import org.springframework.ai.tool.support.ToolUtils;
 import org.springframework.aop.support.AopUtils;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
@@ -31,29 +30,30 @@ public class ReactiveMethodToolCallbackProvider implements ToolCallbackProvider 
 		this.toolObjects = toolObjects;
     }
 
-    @Override
-    public ReactiveMethodToolCallback[] getToolCallbacks() {
-        var toolCallbacks = toolObjects.stream()
-			.map(toolObject -> Stream
-				.of(ReflectionUtils.getDeclaredMethods(
-						AopUtils.isAopProxy(toolObject) ? AopUtils.getTargetClass(toolObject) : toolObject.getClass()))
+	@Override
+	public ReactiveMethodToolCallback[] getToolCallbacks() {
+		ReactiveMethodToolCallback[] toolCallbacks = toolObjects.stream()
+			.flatMap(toolObject -> Arrays.stream(ReflectionUtils.getDeclaredMethods(
+					AopUtils.isAopProxy(toolObject) ? AopUtils.getTargetClass(toolObject) : toolObject.getClass()))
 				.filter(toolMethod -> toolMethod.isAnnotationPresent(Tool.class))
-				.filter(toolMethod -> isReactiveReturnType(toolMethod))
-				.map(toolMethod -> ReactiveMethodToolCallback.builder()
-					.toolDefinition(ToolDefinition.from(toolMethod))
-					.toolMetadata(ToolMetadata.from(toolMethod))
-					.toolMethod(toolMethod)
-					.toolObject(toolObject)
-					.toolCallResultConverter(ToolUtils.getToolCallResultConverter(toolMethod))
-					.build())
-				.toArray(ReactiveMethodToolCallback[]::new))
-			.flatMap(Stream::of)
+				.filter(this::isReactiveReturnType)
+				.map(toolMethod -> buildCallback(toolMethod, toolObject)))
 			.toArray(ReactiveMethodToolCallback[]::new);
 
 		validateToolCallbacks(toolCallbacks);
 
 		return toolCallbacks;
-    }
+	}
+
+	private static ReactiveMethodToolCallback buildCallback(Method toolMethod, Object toolObject) {
+		return ReactiveMethodToolCallback.builder()
+			.toolDefinition(ToolDefinitions.from(toolMethod))
+			.toolMetadata(ToolMetadata.from(toolMethod))
+			.toolMethod(toolMethod)
+			.toolObject(toolObject)
+			.toolCallResultConverter(ToolUtils.getToolCallResultConverter(toolMethod))
+			.build();
+	}
 
     private boolean isReactiveReturnType(Method method) {
         Class<?> returnType = method.getReturnType();

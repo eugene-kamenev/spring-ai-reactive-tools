@@ -130,7 +130,7 @@ public final class Utils {
         } else if (lastMessage instanceof UserMessage last && nextMessage instanceof UserMessage next) {
             var media = new ArrayList<Media>(last.getMedia());
             media.addAll(next.getMedia());
-            return new UserMessage(String.join(DELIMITER, last.getText(), next.getText()), media, next.getMetadata());
+            return new UserMessage(String.join(DELIMITER, last.getText(), next.getText())).mutate().media(media).metadata(next.getMetadata()).build();
         } else {
             throw new IllegalArgumentException("Cannot merge messages of type " + lastMessage.getClass().getName() + " and "+ nextMessage.getClass().getName());
         }

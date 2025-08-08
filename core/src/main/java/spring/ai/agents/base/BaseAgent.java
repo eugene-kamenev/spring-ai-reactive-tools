@@ -106,7 +106,7 @@ public class BaseAgent implements Agent {
     private <T extends Payload> Flux<T> streamPayload(Prompt prompt) {
         return this.chatClient
             .prompt(prompt)
-            .tools(toolCallbackHandler.getToolCallbacks())
+            .toolCallbacks(toolCallbackHandler.getToolCallbacks())
             .stream()
             .chatResponse()
             .map(this::toPayload);
