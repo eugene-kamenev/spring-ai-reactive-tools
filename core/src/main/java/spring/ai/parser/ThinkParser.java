@@ -32,7 +32,7 @@ public class ThinkParser {
                 int flushUpTo = (partialStart != -1) ? partialStart : buffer.length();
                 if (flushUpTo > 0) {
                     String text = buffer.substring(0, flushUpTo);
-                    buffer.delete(0, flushUpTo);
+                    safeDelete(0, flushUpTo);
                     return newTextEvent(text, false);
                 }
                 // Nothing to emit
@@ -41,11 +41,11 @@ public class ThinkParser {
                 // Emit text before the open tag
                 if (openIndex > 0) {
                     String text = buffer.substring(0, openIndex);
-                    buffer.delete(0, openIndex);
+                    safeDelete(0, openIndex);
                     return newTextEvent(text, false);
                 }
                 // Remove the open tag itself and enter think mode
-                buffer.delete(0, OPEN_TAG.length());
+                safeDelete(0, OPEN_TAG.length());
                 inThinkMode = true;
                 // Immediately process thinking content
                 return processBuffer();
@@ -56,9 +56,9 @@ public class ThinkParser {
                 // No close tag found, check for partial close tag at the end
                 int partialStart = findPartialTagStart(CLOSE_TAG);
                 int flushUpTo = (partialStart != -1) ? partialStart : buffer.length();
-                if (flushUpTo > 0) {
+                if (flushUpTo > 0 && flushUpTo <= buffer.length()) {
                     String text = buffer.substring(0, flushUpTo);
-                    buffer.delete(0, flushUpTo);
+                    safeDelete(0, flushUpTo);
                     return newThinkingEvent(text, false);
                 }
                 // Nothing to emit
@@ -66,11 +66,15 @@ public class ThinkParser {
             } else {
                 // Emit thinking content up to close tag
                 String text = buffer.substring(0, closeIndex);
-                buffer.delete(0, closeIndex + CLOSE_TAG.length());
+                safeDelete(0, closeIndex + CLOSE_TAG.length());
                 inThinkMode = false;
                 return newThinkingEvent(text.length() > 0 ? text : null, true);
             }
         }
+    }
+
+    private void safeDelete(int start, int end) {
+        buffer.delete(Math.max(0, start), Math.min(end, buffer.length()));
     }
 
     /**
